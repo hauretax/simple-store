@@ -7,6 +7,26 @@ describe('Store', () => {
     myStore = new Store();
   });
 
+
+
+
+  it('should store JSON values', () => {
+    const data1 = { id: 1, user: { name: 'jhon', town: { id: 8 } } };
+    myStore.storeJSON(JSON.parse(JSON.stringify(data1)));
+    expect(myStore.data).toEqual(data1);
+
+    const data2 = { id: 1, user: { name: 'boulle', town: { id: 9 } } };
+    myStore.storeJSONString(JSON.stringify(data2));
+    // Vérifie si la valeur JSON a été correctement stockée
+    expect(myStore.data).toEqual(data2);
+  });
+
+  it('should retrive data', () => {
+    const data1 = { id: 1, user: { name: 'jhon', town: { id: 8 } } };
+    myStore.storeJSON(JSON.parse(JSON.stringify(data1)));
+  })
+
+
   it('should store and retrieve values', () => {
     myStore.storeNestedKey('', 'valeur');
     expect(myStore.data).toEqual({});
@@ -15,6 +35,7 @@ describe('Store', () => {
     myStore.storeNestedKey('bar.baz', 'qux');
     expect(myStore.data.bar.baz).toBe('qux');
     myStore.storeNestedKey('bar', 'nouvelleValeur');
+    myStore.storeNestedKey('bar.baz', 'dddd');
     myStore.storeNestedKey('a.b.c.d', 123);
     myStore.storeNestedKey('a.b.c.g', 2);
     expect(myStore.data.bar).toBe('nouvelleValeur');

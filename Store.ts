@@ -2,8 +2,12 @@ export default class Store {
     public data: Record<string, any> = {};
 
 
-    storeJson(json: string){
+    storeJSON(json: JSON){
 
+    }
+
+    storeJSONString(jsonString: string){
+      this.storeJSON(JSON.parse(jsonString))
     }
 
     storeNestedKey(keyString: string, value: any): void {
