@@ -30,17 +30,15 @@ describe('Store', () => {
   it('should store and retrieve values', () => {
     myStore.storeNestedKey('', 'valeur');
     expect(myStore.data).toEqual({});
-    myStore.storeNestedKey('foo', 42);
-    expect(myStore.data.foo).toBe(42);
-    myStore.storeNestedKey('bar.baz', 'qux');
-    expect(myStore.data.bar.baz).toBe('qux');
-    myStore.storeNestedKey('bar', 'nouvelleValeur');
-    myStore.storeNestedKey('bar.baz', 'dddd');
-    myStore.storeNestedKey('a.b.c.d', 123);
-    myStore.storeNestedKey('a.b.c.g', 2);
-    expect(myStore.data.bar).toBe('nouvelleValeur');
-    expect(myStore.data.a.b.c.d).toBe(123);
-    expect(myStore.data.a.b.c.g).toBe(2);
+    myStore.storeNestedKey('a.b.c', 42);
+    myStore.storeNestedKey('a.d.g', 'qux');
+    expect(myStore.data.a.d.g).toBe('qux');
+    expect(myStore.data.a.b.c).toBe(42);
+
+    myStore.storeNestedKey('a.d.g.x', 'test');
+    expect(myStore.data.a.d.g.x).toBe('test');
+    myStore.storeNestedKey('a.d.g.x', 'AAAA');
+    expect(myStore.data.a.d.g.x).toBe('AAAA');
   });
 
   it('should handle nested keys', () => {
