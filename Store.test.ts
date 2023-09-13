@@ -1,4 +1,5 @@
 import Store from './Store';
+import { ERROR_NOT_SERIALIZABLE } from './constants';
 
 describe('Store', () => {
   let myStore: Store;
@@ -13,7 +14,7 @@ describe('Store', () => {
     expect(myStore.retrieve('')).toEqual(store1)
 
     const store2 = { id: 1, user: { name: 'boulle', town: { id: 9 } } };
-    myStore.storeJSONString(JSON.stringify(store2));
+    myStore.storeJSON(JSON.stringify(store2));
     // Vérifie si la valeur JSON a été correctement stockée
     expect(myStore.retrieve('')).toEqual(store2)
   });
@@ -60,8 +61,8 @@ describe('Store', () => {
       circularReference: null,
     };
     nonSerializableData.circularReference = nonSerializableData;
-    expect(() => myStore.storeNestedKey('user3.store', nonSerializableData)).toThrow('Value is not serializable');
-    expect(() => myStore.storeObject({ a: nonSerializableData })).toThrow('Value is not serializable');
+    expect(() => myStore.storeNestedKey('user3.store', nonSerializableData)).toThrow(ERROR_NOT_SERIALIZABLE);
+    expect(() => myStore.storeObject({ a: nonSerializableData })).toThrow(ERROR_NOT_SERIALIZABLE);
 
   });
 

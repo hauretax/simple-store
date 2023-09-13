@@ -1,41 +1,67 @@
+import { ERROR_NOT_SERIALIZABLE } from "./constants";
+import merge from 'lodash/merge';
+
+/**
+ * Represents a Store for storing and retrieving data.
+ */
 export default class Store {
   private store: Record<string, any> = {};
 
+
+  /**
+ * Stores an object in the Store.
+ * @param {object} object - The object to store.
+*/
   storeObject(object: object) {
-    if (!this.isSerializable(object))
-      throw new Error('Value is not serializable');
-    this.deepMerge(this.store, object)
-  }
-  storeJSON(json: JSON) {
-    this.deepMerge(this.store, json)
-  }
-  storeJSONString(jsonString: string) {
-    this.storeJSON(JSON.parse(jsonString))
+    //check if is seralizable befor merge it
+    this.isSerializable(object)
+    merge(this.store, object)
   }
 
+  /**
+ * Stores JSON data in the Store.
+ * @param {JSON} json - The JSON data to store.
+ */
+  storeJSON(json: JSON | string) {
+    if (typeof json === 'string')
+      json = JSON.parse(json) as JSON
+    merge(this.store, json)
+  }
+
+
+  /**
+   * Stores a value at a nested key in the Store.
+   * @param {string} keyString - The key string representing the nested location.
+   * @param {any} value - The value to store.
+   */
   storeNestedKey(keyString: string, value: any): void {
-    if (!this.isSerializable(value))
-      throw new Error('Value is not serializable');
+    //check if is seralizable befor merge it
+    this.isSerializable(value)
 
     if (!keyString)
       return;
-    //create keyTab from keyString
+    // Create an array of keys from the keyString
     const keyTab = keyString.split('.')
-    //create new object and deep merge it
+    // Create a new object and deep merge it
     let newObj = {}
     keyTab.reduce((tmpObj, key, i) => {
       if (i === keyTab.length - 1) return tmpObj[key] = value
       return (tmpObj[key] = {});
     }, newObj);
-    this.deepMerge(this.store, newObj)
+    merge(this.store, newObj)
   }
 
+  /**
+ * Retrieves a value from the Store based on a nested key.
+ * @param {string} keyString - The key string representing the nested location.
+ * @returns {any} The retrieved value.
+ */
   retrieve(keyString: string): any {
     if (keyString === '')
       return this.store
-    //create keyTab from keyString
+    // Create an array of keys from the keyString
     const keyTab = keyString.split('.')
-    //find value in store
+    // Find the value in the store
     let currentObj = this.store;
     for (const key of keyTab) {
       if (currentObj.hasOwnProperty(key)) {
@@ -47,14 +73,18 @@ export default class Store {
     return currentObj;
   }
 
+  /**
+ * Lists all entries in the Store.
+ * @returns {object} An object containing all entries in the Store.
+ */
   listEntries() {
     const entries = {};
 
     function recurse(obj: object, currentKey: string) {
       for (const key in obj) {
-        //recursivity end
+        // Recursion termination
         if (!obj.hasOwnProperty(key)) return;
-        //setup object pushed in array
+        // Set up the object pushed in the array
         const newKey = currentKey ? `${currentKey}.${key}` : key;
         const value = obj[key];
 
@@ -73,7 +103,7 @@ export default class Store {
   }
 
   /**
-   * merges two objects, incorporating obj2's properties into obj1.
+   * Merges two objects, incorporating obj2's properties into obj1.
    * Handles nested objects to ensure obj1 retains its structure.
    *
    * @param {object} obj1 - The target object to merge into.
@@ -92,15 +122,17 @@ export default class Store {
     }
   }
 
+  /**
+ * Checks if a value can be serialized to JSON.
+ * @param {any} value - The value to check for serializability.
+ * @throws {Error} Throws an error if the value is not serializable.
+  */
   private isSerializable(value: any) {
     try {
       JSON.stringify(value)
-      return true;
     } catch (error) {
-      return false;
+      throw new Error(ERROR_NOT_SERIALIZABLE)
     }
   }
-
-
 
 }
