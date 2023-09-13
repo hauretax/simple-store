@@ -1,9 +1,9 @@
 export default class Store {
-  public data: Record<string, any> = {};
+  public store: Record<string, any> = {};
 
 
   storeJSON(json: JSON) {
-    this.deepMerge(this.data, json)
+    this.deepMerge(this.store, json)
   }
 
   storeJSONString(jsonString: string) {
@@ -21,15 +21,26 @@ export default class Store {
       if (i === keyTab.length - 1) return tmpObj[key] = value
       return (tmpObj[key] = {});
     }, newObj);
-    this.deepMerge(this.data, newObj)
+    this.deepMerge(this.store, newObj)
   }
 
-  retrieve(key: string): any {
-    return this.data[key];
+  retrieve(keyString: string): any {
+    //create keyTab from keyString
+    const keyTab = keyString.split('.')
+    //find value in store
+    let currentObj = this.store;
+    for (const key of keyTab) {
+      if (currentObj.hasOwnProperty(key)) {
+        currentObj = currentObj[key];
+      } else {
+        return undefined
+      }
+    }
+    return currentObj;
   }
 
   listEntries(): Record<string, any> {
-    return { ...this.data };
+    return { ...this.store };
   }
 
   /**
