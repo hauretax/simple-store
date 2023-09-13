@@ -1,16 +1,22 @@
 export default class Store {
-  public store: Record<string, any> = {};
+  private store: Record<string, any> = {};
 
-
+  storeObject(object: object) {
+    if (!this.isSerializable(object))
+      throw new Error('Value is not serializable');
+    this.deepMerge(this.store, object)
+  }
   storeJSON(json: JSON) {
     this.deepMerge(this.store, json)
   }
-
   storeJSONString(jsonString: string) {
     this.storeJSON(JSON.parse(jsonString))
   }
 
   storeNestedKey(keyString: string, value: any): void {
+    if (!this.isSerializable(value))
+      throw new Error('Value is not serializable');
+
     if (!keyString)
       return;
     //create keyTab from keyString
@@ -25,6 +31,8 @@ export default class Store {
   }
 
   retrieve(keyString: string): any {
+    if (keyString === '')
+      return this.store
     //create keyTab from keyString
     const keyTab = keyString.split('.')
     //find value in store
@@ -39,8 +47,29 @@ export default class Store {
     return currentObj;
   }
 
-  listEntries(): Record<string, any> {
-    return { ...this.store };
+  listEntries() {
+    const entries = {};
+
+    function recurse(obj: object, currentKey: string) {
+      for (const key in obj) {
+        //recursivity end
+        if (!obj.hasOwnProperty(key)) return;
+        //setup object pushed in array
+        const newKey = currentKey ? `${currentKey}.${key}` : key;
+        const value = obj[key];
+
+        if (typeof value === 'object' && !Array.isArray(value))
+          // If the value is an object, recurse to handle nested keys
+          recurse(value, newKey);
+        else
+          // Otherwise, add an entry to the list
+          entries[newKey] = value
+      }
+    }
+
+    recurse(this.store, '');
+
+    return entries;
   }
 
   /**
@@ -62,4 +91,15 @@ export default class Store {
       }
     }
   }
+
+  private isSerializable(value: any) {
+    try {
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+
+
 }
