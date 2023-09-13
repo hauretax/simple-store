@@ -11,8 +11,9 @@ export default class Store {
 
   /**
    * Stores an object in the Store.
-   * @param {object} object - The object to store.
-   * @throws {Error} Throws an error if the user is not allow to write.
+   * @param {object} object - Object to store.
+   * @param {UserType} user - User performing the operation.
+   * @throws {Error} Throws an error if the user does not have permission to see records.
   */
   setByObject(object: object, user: UserType) {
     this.userPermissionCheck("WRITE", user.permission)
@@ -24,8 +25,9 @@ export default class Store {
   /**
  * Stores JSON data in the Store.
  * @param {JSON} json - The JSON data to store.
- * @throws {Error} Throws an error if the user is not allow to write.
- */
+ * @param {UserType} user - User performing the operation.
+ * @throws {Error} Throws an error if the user does not have permission to see records.
+  */
   setByJSON(json: JSON | string, user: UserType) {
     this.userPermissionCheck("WRITE", user.permission)
     if (typeof json === 'string')
@@ -39,9 +41,10 @@ export default class Store {
    * Stores a value at a nested key in the Store.
    * @param {string} keyString - The key string representing the nested location.
    * @param {any} value - The value to store.
-   * @throws {Error} Throws an error if the user is not allow to write.
+   * @param {UserType} user - User performing the operation.
+   * @throws {Error} Throws an error if the user does not have permission to see records.
    */
-  set(keyString: string, value: any, user: UserType): void {
+  set(keyString: string, value: any, user: UserType) {
     this.userPermissionCheck("WRITE", user.permission)
     //check if is seralizable befor merge it
     this.isSerializable(value)
@@ -62,6 +65,8 @@ export default class Store {
   /**
  * Retrieves a value from the Store based on a nested key.
  * @param {string} keyString - The key string representing the nested location.
+ * @param {UserType} user - User performing the operation.
+ * @throws {Error} Throws an error if the user does not have permission to see records.
  */
   del(keyString: string, user: UserType) {
     this.userPermissionCheck("DELETE", user.permission)
@@ -69,11 +74,12 @@ export default class Store {
     this.record.push({ userId: user.id, action: 'DELETE', time: new Date, data: keyString })
   }
 
-
   /**
  * Retrieves a value from the Store based on a nested key.
  * @param {string} keyString - The key string representing the nested location.
+ * @param {UserType} user - User performing the operation.
  * @returns {any} The retrieved value.
+ * @throws {Error} Throws an error if the user does not have permission to see records.
  */
   get(keyString: string, user: UserType): any {
     this.userPermissionCheck("READ", user.permission)
@@ -97,6 +103,8 @@ export default class Store {
   /**
    * Retrieves a stringyfi json
    * @returns {string} the json
+   * @param {UserType} user - User performing the operation.
+   * @throws {Error} Throws an error if the user does not have permission to see records.
    */
   getByJson(user: UserType, keyString?: string): string {
     this.userPermissionCheck("READ", user.permission)
@@ -109,6 +117,8 @@ export default class Store {
   /**
  * Lists all entries in the Store.
  * @returns {object} An objeect containing all entries in the Store.
+ * @param {UserType} user - User performing the operation.
+ * @throws {Error} Throws an error if the user does not have permission to see records.
  */
   getEntries(user: UserType): object {
     this.userPermissionCheck("READ", user.permission)
@@ -136,13 +146,26 @@ export default class Store {
     return entries;
   }
 
+  /**
+ * Retrieves records for a user and logs the action.
+ *
+ * @param {UserType} user - The user for whom to retrieve records.
+ * @returns {Array<rec>} An array of records for the user.
+ * @throws {Error} Throws an error if the user does not have permission to see records.
+ */
   getRecord(user: UserType): Array<rec> {
     this.userPermissionCheck("SEE_RECORD", user.permission)
     this.record.push({ userId: user.id, action: "SEE_RECORD", time: new Date })
     return this.record;
   }
 
-
+  /**
+   * Merges data into the store and records the action.
+   *
+   * @param {object} data - The data to merge into the store.
+   * @param {string} userId - The ID of the user performing the action.
+   * @returns {void}
+   */
   private mergeAndRecord(data: object, userId: string) {
     merge(this.store, data)
     this.record.push({ userId, action: "WRITE", time: new Date, data })
@@ -161,6 +184,13 @@ export default class Store {
     }
   }
 
+  /**
+ * Checks if a user has permission to perform a specific action.
+ *
+ * @param {Action} action - The action to check for permission.
+ * @param {Array<Action>} userPermission - The user's permissions.
+ * @throws {Error} Throws an error if the user does not have permission for the specified action.
+ */
   private userPermissionCheck(action: Action, userPermission: Array<Action>) {
     if (!userPermission.includes(action))
       throw new Error(STORE_ERRORS.ACCESS_DENID + ' ' + action)
