@@ -7,12 +7,11 @@ import merge from 'lodash/merge';
 export default class Store {
   private store: Record<string, any> = {};
 
-
   /**
  * Stores an object in the Store.
  * @param {object} object - The object to store.
 */
-  storeObject(object: object) {
+  setByObject(object: object) {
     //check if is seralizable befor merge it
     this.isSerializable(object)
     merge(this.store, object)
@@ -22,7 +21,7 @@ export default class Store {
  * Stores JSON data in the Store.
  * @param {JSON} json - The JSON data to store.
  */
-  storeJSON(json: JSON | string) {
+  setByJSON(json: JSON | string) {
     if (typeof json === 'string')
       json = JSON.parse(json) as JSON
     merge(this.store, json)
@@ -34,7 +33,7 @@ export default class Store {
    * @param {string} keyString - The key string representing the nested location.
    * @param {any} value - The value to store.
    */
-  storeNestedKey(keyString: string, value: any): void {
+  set(keyString: string, value: any): void {
     //check if is seralizable befor merge it
     this.isSerializable(value)
 
@@ -56,7 +55,7 @@ export default class Store {
  * @param {string} keyString - The key string representing the nested location.
  * @returns {any} The retrieved value.
  */
-  retrieve(keyString: string): any {
+  get(keyString: string): any {
     if (keyString === '')
       return this.store
     // Create an array of keys from the keyString
@@ -74,10 +73,18 @@ export default class Store {
   }
 
   /**
+   * Retrieves a stringyfi json
+   * @returns {string} the json
+   */
+  getByJson(): string {
+    return JSON.stringify(this.store)
+  }
+
+  /**
  * Lists all entries in the Store.
  * @returns {object} An object containing all entries in the Store.
  */
-  listEntries() {
+  getEntries(): object {
     const entries = {};
 
     function recurse(obj: object, currentKey: string) {
@@ -102,25 +109,7 @@ export default class Store {
     return entries;
   }
 
-  /**
-   * Merges two objects, incorporating obj2's properties into obj1.
-   * Handles nested objects to ensure obj1 retains its structure.
-   *
-   * @param {object} obj1 - The target object to merge into.
-   * @param {object} obj2 - The source object with properties to merge from.
-   */
-  private deepMerge(obj1: object, obj2: object) {
-    for (const key in obj2) {
-      if (typeof obj2[key] === 'object' && obj2[key] !== null && !Array.isArray(obj2[key])) {
-        if (typeof obj1[key] !== 'object' || Array.isArray(obj1[key])) {
-          obj1[key] = {};
-        }
-        this.deepMerge(obj1[key], obj2[key]);
-      } else {
-        obj1[key] = obj2[key];
-      }
-    }
-  }
+
 
   /**
  * Checks if a value can be serialized to JSON.
