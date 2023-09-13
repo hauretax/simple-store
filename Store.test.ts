@@ -30,7 +30,6 @@ describe('Store', () => {
     myStore.setByJSON(JSON.parse(JSON.stringify(store1)), privateUser);
     expect(myStore.getRecord(adminUser)).toBeDefined()
     expect(() => myStore.getRecord(publicUser)).toThrow(STORE_ERRORS.ACCESS_DENID + ' SEE_RECORD')
-    console.log()
   })
 
   it('stores and retrieves JSON values', () => {
