@@ -94,6 +94,7 @@ export default class Store {
 
   private isSerializable(value: any) {
     try {
+      JSON.stringify(value)
       return true;
     } catch (error) {
       return false;
